@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset='utf-8'>
+		<title>Kancollet for Chrome</title>
+		<link rel="shortcut icon" type="image/png" href="/icon_128.png">
+		<link rel="stylesheet" type="text/css" media="screen" href="/main.css">
+		<script src="/utils.js" defer></script>
+		<script src="/storage_access.js" defer></script>
+		<script src="/options.js" defer></script>
+	</head>
+
+	<body>
+		<header id="page-header">
+			<div id="banner">
+				<h1>Kancollet</h1>
+				<p id="short-description">艦これの遠征・入渠・建造の終了を教えてくれるタイマー
+				</p>
+			</div>
+		</header>
+
+		<main class="page-content">
+			<form id="settings" name="setting">
+			<h1>設定</h1>
+			<h2>自動読み込み</h2>
+			<p>
+			この設定を有効にすると、艦隊これくしょんのページを開いたときに自動的にKancolletを起動します。
+			</p>
+				<input id="autoload-enable" type="radio" name="autoload" value="true" ><label for="autoload-enable">有効にする</label>
+				<input id="autoload-disable" type="radio" name="autoload" value="false"><label for="autoload-disable">無効にする</label>
+
+			<h2>使用バージョン</h2>
+			<p>
+			利用するバージョンを選択できます。メニューから使用するバージョンを選んでください。
+			<strong>推奨値は「master」</strong>です。
+			</p>
+
+			<p>
+			<select id="ref-select" name="ref" disabled>
+				<option value="disabled" disabled selected>-- 選択してください --</option>
+			</select>
+			<span id="generating-refs">現在、バージョン一覧を生成中です...</span>
+			</p>
+
+			<p>
+			各バージョンの説明：
+			</p>
+
+			<dl>
+				<dt>master</dt>
+				<dd>最新の安定版リリースです。初期値は、これになっています。</dd>
+				<dt>develop</dt>
+				<dd>最新の開発版です。最新版の機能を利用できます。開発中のものであるため、不安定な場合があります。</dd>
+				<dt>ver x.xx</dt>
+				<dd>これまでにリリースされた安定バージョンです。古いバージョンを利用できますが、新しい機能を使えません。</dd>
+			</dl>
+
+			<input type="submit" value="設定を保存">
+			<input type="reset" value="リセット">
+			</form>
+		</main>
+	</body>
+</html>
