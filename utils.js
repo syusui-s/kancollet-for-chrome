@@ -4,17 +4,18 @@ function fetchRefsPromise() {
 		chrome.storage.local.get('last-refs', (storage) => {
 			const last_refs = storage['last-refs'];
 			if (last_refs) {
-				const expired = (Date.now() > (last_refs['date'] + 10*60*1000));
-				Object.assign(last_refs, { 'expired': expired });
+				const available = ( Date.now() < (last_refs['date'] + 10*60*1000) );
+				Object.assign(last_refs, { available: available });
 				resolve(last_refs);
 			} else {
-				resolve({ 'expired': false, refs: [] });
+				resolve({ available: false, refs: [] });
 			}
 		});
 	}).then((last_refs) => {
-		if (! last_refs['expired']) { return last_refs['refs']; }
+		if (last_refs['available']) { return last_refs['refs']; }
 
 		return new Promise((resolve, error) => {
+			/* fetch refs from github */
 			const refs_url = 'https://api.github.com/repos/syusui-s/kancollet/git/refs';
 			const xhr = new XMLHttpRequest();
 			xhr.open('GET', refs_url, true);
@@ -22,12 +23,13 @@ function fetchRefsPromise() {
 				if (xhr.status === 200 && xhr.responseText.length > 0) {
 					let obj;
 					try { obj = JSON.parse(xhr.responseText) || []; }
-					catch (e) { return last_refs['refs']; }
+					catch (e) { return last_refs['refs']; } /* when fetch failed */
 					resolve(obj);
 				} else { return []; }
 			};
 			xhr.send();
 		}).then((obj) => {
+			/* generate refs */
 			const refs = obj.map((e) => {
 				const match = e['ref'].match(/^refs\/(\w+)\/([\w-.]+)$/);
 				let type = 'unknown';
@@ -38,6 +40,7 @@ function fetchRefsPromise() {
 				}
 				return { type: type, name: match[2] };
 			});
+
 			if (refs.length > 0) {
 				chrome.storage.local.set({
 					'last-refs': { refs: refs, date: Date.now() }

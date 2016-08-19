@@ -1,4 +1,6 @@
 function initializeForms() {
+	document.forms['settings'].addEventListener('submit', onSubmit);
+
 	StorageAccess.get(['autoload', 'ref'], (storage) => {
 		/* autoload */
 		const autoload_form = document.forms['settings']['autoload'];
@@ -11,6 +13,14 @@ function initializeForms() {
 		fetchRefsPromise().then((refs) => {
 			const found = refs.find((ref) => ref['name'] === storage['ref']) || 'master';
 			const refs_cleaned = filterUnneededRefs(refs);
+			const status_elem = document.querySelector('span#generating-refs');
+
+			/* if there is no refs (when error) */
+			if (refs.length === 0) {
+				status_elem.textContent = '生成に失敗しました。インターネットに接続していますか？';
+				return;
+			}
+
 			refs_cleaned.forEach((ref) => {
 				const option = document.createElement('option');
 				option.value = ref['name'];
@@ -20,7 +30,7 @@ function initializeForms() {
 			});
 			ref_form.disabled = false;
 			document.querySelector('option[value="disabled"]').remove();
-			document.querySelector('span#generating-refs').remove();
+			status_elem.remove();
 		});
 	});
 }
@@ -43,6 +53,5 @@ function onSubmit(event) {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
-	document.querySelector('form#settings').addEventListener('submit', onSubmit);
 	initializeForms();
 });

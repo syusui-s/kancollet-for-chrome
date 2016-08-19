@@ -5,6 +5,7 @@
    "permissions": [
        "tabs",
        "storage",
+       "declarativeContent",
        "https://api.github.com/repos/syusui-s/kancollet/*",
        "http://www.dmm.com/netgame/social/*"
    ],
@@ -13,7 +14,7 @@
       "page": "background.html",
       "persistent": false
    },
-   "browser_action": {
+   "page_action": {
       "default_icon": "icon_128.png",
       "default_title": "Kancollet for Chrome"
    },

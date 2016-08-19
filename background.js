@@ -10,6 +10,19 @@ function initializeSettings() {
 	chrome.storage.sync.get(['autoload', 'ref'], (storage) => {
 		chrome.storage.sync.set( Object.assign(defaultSettings, storage) );
 	});
+
+	/* autoload configuration */
+	let rule = {
+		conditions: [
+			new chrome.declarativeContent.PageStateMatcher({
+				pageUrl: { hostEquals: 'www.dmm.com', pathPrefix: '/netgame/social/-/gadgets/=/app_id=854854/' }
+			})
+		],
+		actions: [ new chrome.declarativeContent.ShowPageAction() ]
+	};
+	chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
+		chrome.declarativeContent.onPageChanged.addRules([rule]);
+	});
 }
 
 function handleGetExecInfo(sendResponse) {
@@ -23,18 +36,12 @@ function handleGetExecInfo(sendResponse) {
 		if (ref === 'master') { script_src = master_url; }
 		else { script_src = cdn_url.replace(':ref:', ref || 'master'); }
 		
-		console.log("execinfo");
 		sendResponse({ success: true, autoload: autoload, script_src: script_src });
 	});
 
 }
 
-/* main */
-chrome.runtime.onInstalled.addListener((details) => {
-	if (['installl', 'update'].includes(details.reason)) { initializeSettings(); }
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+function onMessageHandler(message, sender, sendResponse) {
 	if (!sender.tab) {
 		sendResponse({ success: false });
 		return;
@@ -50,6 +57,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	}
 
 	return true;
-});
+}
 
-chrome.browserAction.onClicked.addListener(executeKancollet);
+/* main */
+chrome.runtime.onInstalled.addListener((details) => {
+	if (['installl', 'update'].includes(details.reason)) { initializeSettings(); }
+});
+chrome.runtime.onMessage.addListener(onMessageHandler); 
+chrome.pageAction.onClicked.addListener(executeKancollet);

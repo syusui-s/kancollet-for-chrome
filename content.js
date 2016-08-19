@@ -15,9 +15,10 @@
 			const { success, autoload, script_src } = execInfo || {};
 
 			/* if not autoload and not manual_launch, or already exists */
-			if (! success
-				|| (!autoload && !is_manual_launch)
-				|| document.querySelector('div#kancollet')
+			if (! (success
+				&& (autoload || manual_launch)
+				&& ! document.querySelector('div#kancollet')
+				)
 			) { return; }
 			
 			const script = document.getElementById('kancollet_script');
