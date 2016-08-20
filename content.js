@@ -1,13 +1,21 @@
 'use strict';
 
 {
-	function insertCode(script_src) {
-		const new_script = document.createElement('script');
-		new_script.id = 'kancollet_script';
-		new_script.setAttribute('language', 'javascript');
-		new_script.setAttribute('src', script_src);
-		new_script.setAttribute('charset', 'UTF-8');
-		document.head.appendChild(new_script);
+	function insertCode(object) {
+		const { src, code, id } = object;
+		if (! (src || code) ) { return false; }
+
+		const script = document.createElement('script');
+		if (id) { script.id = id; }
+		script.setAttribute('language', 'javascript');
+		script.setAttribute('charset', 'UTF-8');
+
+		if (src)  { script.setAttribute('src', src); }
+		if (code) { script.textContent = code; }
+
+		document.head.appendChild(script);
+
+		return true;
 	}
 
 	function executeKancollet(manual_launch) {
@@ -15,17 +23,15 @@
 			const { success, autoload, script_src } = execInfo || {};
 
 			/* if not autoload and not manual_launch, or already exists */
-			if (! (success
-				&& (autoload || manual_launch)
-				&& ! document.querySelector('div#kancollet')
-				)
-			) { return; }
+			if (! ( success && (autoload || manual_launch) ) ) {
+				return;
+			}
 			
 			const script = document.getElementById('kancollet_script');
 			if (script) {
-				Kancollet.create();
+				location.href('javascript:Kancollet.create();');
 			} else {
-				insertCode(script_src);
+				insertCode({ src: script_src, id: 'kancollet_script' });
 			}
 		});
 	}
