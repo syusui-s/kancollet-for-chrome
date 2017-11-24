@@ -10,7 +10,8 @@ function initializeForms() {
 		/* ref */
 		const ref_form = document.forms['settings']['ref'];
 		/* create options */
-		fetchRefsPromise().then((refs) => {
+		fetchRefsPromise().then((result) => {
+			const { refs } = result;
 			const found = refs.find((ref) => ref['name'] === storage['ref']) || 'master';
 			const refs_cleaned = filterUnneededRefs(refs);
 			const status_elem = document.querySelector('span#generating-refs');
@@ -18,6 +19,10 @@ function initializeForms() {
 			/* if there is no refs (when error) */
 			if (refs.length === 0) {
 				status_elem.textContent = '生成に失敗しました。インターネットに接続していますか？';
+				const options = {
+					year: 'numeric', month: '2-digit', day: '2-digit',
+					hour: '2-digit', minute: '2-digit', second: '2-digit'
+				};
 				return;
 			}
 
@@ -48,6 +53,7 @@ function onSubmit(event) {
 	}, (success) => {
 		alert('設定を保存しました。');
 	}, (error) => {
+    console.log(error);
 		alert(error['message']);
 	});
 }

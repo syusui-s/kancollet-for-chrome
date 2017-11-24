@@ -9,7 +9,8 @@ var StorageAccess = {
 				: Promise.reject({ message: 'Invalid "autoload" value.' });
 		},
 		ref(value) {
-			return fetchRefsPromise().then((refs) => {
+			return fetchRefsPromise().then((result) => {
+				const { refs } = result;
 				const found = filterUnneededRefs(refs).find( (ref) => (ref['name'] == value) );
 				return found
 					? Promise.resolve()

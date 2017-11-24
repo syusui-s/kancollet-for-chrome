@@ -4,33 +4,48 @@ function fetchRefsPromise() {
 		chrome.storage.local.get('last-refs', (storage) => {
 			const last_refs = storage['last-refs'];
 			if (last_refs) {
-				const available = ( Date.now() < (last_refs['date'] + 10*60*1000) );
-				Object.assign(last_refs, { available: available });
+				const cache_available = ( Date.now() < (last_refs['date'] + 10*60*1000) );
+				Object.assign(last_refs, { cache: cache_available, fetch: false });
 				resolve(last_refs);
 			} else {
-				resolve({ available: false, refs: [] });
+				resolve({ cache: false });
 			}
 		});
-	}).then((last_refs) => {
-		if (last_refs['available']) { return last_refs['refs']; }
+	}).then((result) => {
+		if (result.cache) { return result; }
 
 		return new Promise((resolve, error) => {
 			/* fetch refs from github */
 			const refs_url = 'https://api.github.com/repos/syusui-s/kancollet/git/refs';
 			const xhr = new XMLHttpRequest();
+			xhr.responseType = 'json';
+			xhr.addEventListener('load', (e) => {
+				if (xhr.status === 200 && xhr.response) {
+					Object.assign(result, { fetch: true, refs: xhr.response });
+					resolve(result);
+				} else {
+					let reason;
+					const info = {};
+					if (xhr.status === 403 &&
+						+xhr.getResponseHeader('X-RateLimit-Remaining') == 0
+					) {
+						reason = 'API_RATE_LIMIT';
+						info.rateLimitReset = new Date(+xhr.getResponseHeader('X-RateLimit-Reset') * 1000);
+					} else {
+						reason = 'UNKNOWN';
+					}
+					Object.assign(result, { fetch: false, reason: reason, info: info });
+					resolve(result);
+				}
+			});
+			xhr.addEventListener('error', (e) => {
+				console.log(e);
+			});
 			xhr.open('GET', refs_url, true);
-			xhr.onload = (e) => {
-				if (xhr.status === 200 && xhr.responseText.length > 0) {
-					let obj;
-					try { obj = JSON.parse(xhr.responseText) || []; }
-					catch (e) { return last_refs['refs']; } /* when fetch failed */
-					resolve(obj);
-				} else { return []; }
-			};
 			xhr.send();
 		}).then((obj) => {
 			/* generate refs */
-			const refs = obj.map((e) => {
+			const refs = obj.refs.map((e) => {
 				const match = e['ref'].match(/^refs\/(\w+)\/([\w-.]+)$/);
 				let type = 'unknown';
 				switch (match[1]) {
